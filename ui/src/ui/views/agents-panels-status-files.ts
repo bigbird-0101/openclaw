@@ -454,9 +454,10 @@ export function renderAgentFiles(params: {
                                 `
                               : nothing
                           }
-                          <label class="field" style="margin-top: 12px;">
+                          <label class="field agent-file-field" style="margin-top: 12px;">
                             <span>Content</span>
                             <textarea
+                              class="agent-file-textarea"
                               .value=${draft}
                               @input=${(e: Event) =>
                                 params.onFileDraftChange(

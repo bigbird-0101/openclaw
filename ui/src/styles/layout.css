@@ -179,15 +179,10 @@
   height: 6px;
 }
 
-.topbar-status .theme-toggle {
-  --theme-item: 24px;
-  --theme-gap: 2px;
-  --theme-pad: 3px;
-}
-
-.topbar-status .theme-icon {
-  width: 12px;
-  height: 12px;
+.topbar-status .theme-orb__trigger {
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
 }
 
 /* ===========================================
@@ -298,7 +293,8 @@
 }
 
 /* Nav label */
-.nav-label {
+.nav-label,
+.nav-group__label {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -319,31 +315,51 @@
     background var(--duration-fast) ease;
 }
 
-.nav-label:hover {
+.nav-label:hover,
+.nav-group__label:hover {
   color: var(--text);
   background: var(--bg-hover);
 }
 
-.nav-label--static {
+.nav-label--static,
+.nav-group__label--static {
   cursor: default;
 }
 
-.nav-label--static:hover {
+.nav-label--static:hover,
+.nav-group__label--static:hover {
   color: var(--muted);
   background: transparent;
 }
 
-.nav-label__text {
+.nav-label__text,
+.nav-group__label-text {
   flex: 1;
 }
 
-.nav-label__chevron {
+.nav-label__chevron,
+.nav-group__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 10px;
   opacity: 0.5;
   transition: transform var(--duration-fast) ease;
 }
 
-.nav-group--collapsed .nav-label__chevron {
+.nav-label__chevron svg,
+.nav-group__chevron svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-group--collapsed .nav-label__chevron,
+.nav-group--collapsed .nav-group__chevron {
   transform: rotate(-90deg);
 }
 
