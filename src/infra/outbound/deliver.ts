@@ -55,6 +55,7 @@ type SendMatrixMessage = (
   text: string,
   opts?: {
     cfg?: OpenClawConfig;
+    accountId?: string;
     mediaUrl?: string;
     replyToId?: string;
     threadId?: string;
