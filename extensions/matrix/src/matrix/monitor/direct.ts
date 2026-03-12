@@ -64,6 +64,11 @@ export function createDirectRoomTracker(client: MatrixClient, opts: DirectRoomTr
   };
 
   return {
+    invalidateRoom: (roomId: string): void => {
+      joinedMembersCache.delete(roomId);
+      lastDmUpdateMs = 0;
+      log(`matrix: invalidated dm cache room=${roomId}`);
+    },
     isDirectMessage: async (params: DirectMessageCheck): Promise<boolean> => {
       const { roomId, senderId } = params;
       await refreshDmCache();

@@ -11,6 +11,9 @@ export function registerMatrixMonitorEvents(params: {
   cfg: CoreConfig;
   client: MatrixClient;
   auth: MatrixAuth;
+  directTracker?: {
+    invalidateRoom: (roomId: string) => void;
+  };
   logVerboseMessage: (message: string) => void;
   warnedEncryptedRooms: Set<string>;
   warnedCryptoMissingRooms: Set<string>;
@@ -22,6 +25,7 @@ export function registerMatrixMonitorEvents(params: {
     cfg,
     client,
     auth,
+    directTracker,
     logVerboseMessage,
     warnedEncryptedRooms,
     warnedCryptoMissingRooms,
@@ -68,6 +72,7 @@ export function registerMatrixMonitorEvents(params: {
   );
 
   client.on("room.invite", (roomId: string, event: MatrixRawEvent) => {
+    directTracker?.invalidateRoom(roomId);
     const eventId = event?.event_id ?? "unknown";
     const sender = event?.sender ?? "unknown";
     const isDirect = (event?.content as { is_direct?: boolean } | undefined)?.is_direct === true;
@@ -77,6 +82,7 @@ export function registerMatrixMonitorEvents(params: {
   });
 
   client.on("room.join", (roomId: string, event: MatrixRawEvent) => {
+    directTracker?.invalidateRoom(roomId);
     const eventId = event?.event_id ?? "unknown";
     logVerboseMessage(`matrix: join room=${roomId} id=${eventId}`);
   });
@@ -105,6 +111,7 @@ export function registerMatrixMonitorEvents(params: {
       return;
     }
     if (eventType === EventType.RoomMember) {
+      directTracker?.invalidateRoom(roomId);
       const membership = (event?.content as { membership?: string } | undefined)?.membership;
       const stateKey = (event as { state_key?: string }).state_key ?? "";
       logVerboseMessage(

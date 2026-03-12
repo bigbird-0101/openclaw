@@ -37,6 +37,7 @@ function createHarness(params?: {
   const onRoomMessage = vi.fn(async () => {});
   const listVerifications = vi.fn(async () => params?.verifications ?? []);
   const sendMessage = vi.fn(async () => "$notice");
+  const invalidateRoom = vi.fn();
   const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
   const formatNativeDependencyHint = vi.fn(() => "install hint");
   const client = {
@@ -66,6 +67,9 @@ function createHarness(params?: {
       accountId: params?.accountId ?? "default",
       encryption: params?.authEncryption ?? true,
     } as MatrixAuth,
+    directTracker: {
+      invalidateRoom,
+    },
     logVerboseMessage: vi.fn(),
     warnedEncryptedRooms: new Set<string>(),
     warnedCryptoMissingRooms: new Set<string>(),
@@ -82,6 +86,7 @@ function createHarness(params?: {
   return {
     onRoomMessage,
     sendMessage,
+    invalidateRoom,
     roomEventListener,
     listVerifications,
     logger,
@@ -115,6 +120,23 @@ describe("registerMatrixMonitorEvents verification routing", () => {
       );
     });
     expect(sendMessage).not.toHaveBeenCalled();
+  });
+
+  it("invalidates direct-room membership cache on room member events", async () => {
+    const { invalidateRoom, roomEventListener } = createHarness();
+
+    roomEventListener("!room:example.org", {
+      event_id: "$member1",
+      sender: "@alice:example.org",
+      state_key: "@mallory:example.org",
+      type: EventType.RoomMember,
+      origin_server_ts: Date.now(),
+      content: {
+        membership: "join",
+      },
+    });
+
+    expect(invalidateRoom).toHaveBeenCalledWith("!room:example.org");
   });
 
   it("posts verification request notices directly into the room", async () => {

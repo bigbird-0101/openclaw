@@ -212,6 +212,7 @@ export async function monitorMatrixProvider(opts: MonitorMatrixOpts = {}): Promi
     cfg,
     client,
     auth,
+    directTracker,
     logVerboseMessage,
     warnedEncryptedRooms,
     warnedCryptoMissingRooms,

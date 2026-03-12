@@ -8,14 +8,14 @@ function createMockClient(params: {
   selfDirect?: boolean;
   members?: string[];
 }) {
-  const members = params.members ?? ["@alice:example.org", "@bot:example.org"];
+  let members = params.members ?? ["@alice:example.org", "@bot:example.org"];
   return {
     dms: {
       update: vi.fn().mockResolvedValue(undefined),
       isDm: vi.fn().mockReturnValue(params.isDm === true),
     },
     getUserId: vi.fn().mockResolvedValue("@bot:example.org"),
-    getJoinedRoomMembers: vi.fn().mockResolvedValue(members),
+    getJoinedRoomMembers: vi.fn().mockImplementation(async () => members),
     getRoomStateEvent: vi
       .fn()
       .mockImplementation(async (_roomId: string, eventType: string, stateKey: string) => {
@@ -27,6 +27,9 @@ function createMockClient(params: {
         }
         return {};
       }),
+    __setMembers(next: string[]) {
+      members = next;
+    },
   } as unknown as MatrixClient;
 }
 
@@ -90,6 +93,33 @@ describe("createDirectRoomTracker", () => {
         members: ["@mallory:example.org", "@bot:example.org"],
       }),
     );
+    await expect(
+      tracker.isDirectMessage({
+        roomId: "!room:example.org",
+        senderId: "@alice:example.org",
+      }),
+    ).resolves.toBe(false);
+  });
+
+  it("re-checks room membership after invalidation when a DM gains extra members", async () => {
+    const client = createMockClient({ isDm: true });
+    const tracker = createDirectRoomTracker(client);
+
+    await expect(
+      tracker.isDirectMessage({
+        roomId: "!room:example.org",
+        senderId: "@alice:example.org",
+      }),
+    ).resolves.toBe(true);
+
+    (client as MatrixClient & { __setMembers: (members: string[]) => void }).__setMembers([
+      "@alice:example.org",
+      "@bot:example.org",
+      "@mallory:example.org",
+    ]);
+
+    tracker.invalidateRoom("!room:example.org");
+
     await expect(
       tracker.isDirectMessage({
         roomId: "!room:example.org",
